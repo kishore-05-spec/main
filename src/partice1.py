@@ -1,0 +1,1 @@
+print("this is the pratic1.py")
