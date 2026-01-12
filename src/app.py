@@ -143,3 +143,39 @@ def extract_structured(pdf_stream: BytesIO) -> Dict[str, Any]:
     merged_out = [{"start_page": m["start_page"], "end_page": m["end_page"], "rows": m["rows"]} for m in merged]
 
     return {"file": None, "pages": pages_out, "merged_tables": merged_out}
+
+
+
+
+
+
+# Enable human readable logs
+quarkus.log.console.json=${JSON_FMT_LOG:false}
+
+# Exclude the DB schema from messages to keep them lean
+debezium.format.schemas.enable=false
+
+# Set a prefix for kafka/redis topics/stream names
+debezium.source.offset.storage.file.filename=./offsets.dat
+debezium.source.offset.flush.interval.ms=0
+debezium.source.topic.prefix=debezium
+
+# PostgreSQL source connector properties
+debezium.source.database.hostname=${PGHOST}
+debezium.source.database.port=${PGPORT:5432}
+debezium.source.database.user=${PGUSER}
+debezium.source.database.password=${PGPASSWORD}
+debezium.source.database.dbname=${PGDATABASE}
+debezium.source.database.server.name=tutorial
+debezium.source.snapshot.mode=initial
+debezium.source.plugin.name=pgoutput
+debezium.source.connector.class=io.debezium.connector.postgresql.PostgresConnector
+debezium.source.schema.whitelist=public
+table.include.list=playing_with_neon
+
+# Redis sink connector properties
+debezium.sink.type=redis
+debezium.sink.redis.address=redis:6379
+debezium.sink.redis.password=
+debezium.sink.redis.ssl.enabled=false
+debezium.sink.redis.wait.retry.enabled=true
