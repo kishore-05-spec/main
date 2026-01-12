@@ -179,3 +179,57 @@ debezium.sink.redis.address=redis:6379
 debezium.sink.redis.password=
 debezium.sink.redis.ssl.enabled=false
 debezium.sink.redis.wait.retry.enabled=true
+
+
+
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_replication_slots=4
+      - -c
+      - max_wal_senders=4
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis-stack
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+
+  debezium:
+    image: debezium/server:2.6
+    container_name: debezium-server
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./debezium/conf:/debezium/conf
+      - ./debezium/data:/debezium/data
+    env_file:
+      - .env
+
+
+
+
