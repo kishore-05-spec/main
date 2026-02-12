@@ -193,6 +193,59 @@ print(response.output)
 
 
 
+from openai import AzureOpenAI
+from pydantic_ai import Agent, Memory
+from pydantic_ai.models.openai import OpenAIChatModel
+from azure.identity import AzureCliCredential, get_bearer_token_provider
+import httpx
+
+# =========================
+# Azure AD Token Provider
+# =========================
+token_provider = get_bearer_token_provider(
+    AzureCliCredential(),
+    "https://cognitiveservices.azure.com/.default",
+)
+
+# =========================
+# Azure OpenAI Client
+# =========================
+http_client = httpx.Client(verify=False)
+
+azure_client = AzureOpenAI(
+    azure_endpoint="https://dts-sandbox-opena100003.openai.azure.com/",
+    api_version="2024-02-15-preview",
+    azure_ad_token_provider=token_provider,
+    http_client=http_client,
+)
+
+# =========================
+# Create Model (IMPORTANT)
+# =========================
+model = OpenAIChatModel(
+    model="gpt-4o-mini",   # Azure deployment name
+    client=azure_client,   # pass Azure client here
+)
+
+# =========================
+# Memory
+# =========================
+memory = Memory()
+
+# =========================
+# Agent
+# =========================
+agent = Agent(
+    model=model,   # pass model object, not string
+    memory=memory,
+)
+
+# =========================
+# Test
+# =========================
+response = agent.run("Say hello")
+print(response.output)
+
 
 
 
