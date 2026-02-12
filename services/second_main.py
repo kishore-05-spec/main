@@ -134,6 +134,64 @@ FINAL OUTPUT RULE
 • No markdown
 • SQL only
 
+import httpx
+from openai import AzureOpenAI
+from pydantic_ai import Agent, Memory
+from azure.identity import AzureCliCredential, get_bearer_token_provider
+
+# =========================
+# Azure AD Token Provider
+# =========================
+
+token_provider = get_bearer_token_provider(
+    AzureCliCredential(),
+    "https://cognitiveservices.azure.com/.default",
+)
+
+# =========================
+# Azure OpenAI Client
+# =========================
+
+http_client = httpx.Client(verify=False)
+
+client = AzureOpenAI(
+    azure_endpoint="https://dts-sandbox-opena100003.openai.azure.com/",
+    api_version="2024-02-15-preview",
+    azure_ad_token_provider=token_provider,
+    http_client=http_client,
+)
+
+# =========================
+# Deployment Name
+# =========================
+
+AZURE_DEPLOYMENT_NAME = "gpt-4o-mini"
+
+# =========================
+# Memory
+# =========================
+
+memory = Memory()
+
+# =========================
+# Agent (Correct)
+# =========================
+
+agent = Agent(
+    client=client,              # ✅ pass Azure client
+    model=AZURE_DEPLOYMENT_NAME, # ✅ deployment name
+    memory=memory,
+    temperature=0,
+)
+
+# =========================
+# Test
+# =========================
+
+response = agent.run("Say hello")
+print(response.output)
+
+
 
 
 
