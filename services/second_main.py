@@ -1,4 +1,46 @@
 
+from pydantic_ai import Agent, Memory
+from openai import OpenAI
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+
+# =========================
+# Azure AD Token Provider
+# =========================
+token_provider = get_bearer_token_provider(
+    DefaultAzureCredential(),
+    "https://cognitiveservices.azure.com/.default",
+)
+
+# =========================
+# Configure Global OpenAI Client
+# =========================
+# NOTE: pydantic-ai will automatically use this client
+OpenAI(
+    base_url="https://dts-sandbox-opena100003.openai.azure.com/openai/deployments/gpt-4o-mini",
+    api_key=token_provider,  # Azure AD token
+)
+
+# =========================
+# Agent
+# =========================
+agent = Agent(
+    model="gpt-4o-mini",
+    memory=Memory(),
+    temperature=0,
+)
+
+# =========================
+# Test
+# =========================
+if __name__ == "__main__":
+    response = agent.run("Say hello in one sentence")
+    print("\nAI Response:\n")
+    print(response.output)
+
+
+
+
+
 
 ========================
 ACCOUNT QUESTION ENFORCEMENT RULE (CRITICAL)
